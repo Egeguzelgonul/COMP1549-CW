@@ -25,8 +25,8 @@ public class ChatServer {
     // All client names, so we can check for duplicates upon registration.
     private static Set<String> names = new HashSet<>();
     
-    //Coordinator
-    private static String coordinator;
+ // The set of all the print writers for all the coordinators, used for broadcast.
+    private static Set<String> coordinators = new HashSet<>();
 
      // The set of all the print writers for all the clients, used for broadcast.
     private static Set<PrintWriter> writers = new HashSet<>();
@@ -80,13 +80,6 @@ public class ChatServer {
                     synchronized (names) {
                         if (!name.isEmpty() && !names.contains(name)) {
                             names.add(name);
-                            if (coordinator == null) {
-                            	coordinator = name;
-                            	for (PrintWriter writer : writers) {
-                                    writer.println("MESSAGE " + coordinator + " is now the coordinator");
-                                }
-                            	System.out.println(name + " is now the coordinator");
-                            }
                             break;
                         }
                     }
@@ -99,16 +92,33 @@ public class ChatServer {
                 for (PrintWriter writer : writers) {
                     writer.println("MESSAGE " + name + " has joined");
                 }
+                // If the naming process is successful, coordinator check occurs
+                // Check if there's a coordinator, if not, assign the first name in the list
+                if (coordinators.isEmpty() && !names.isEmpty()) {
+                	coordinators.add(names.stream().findFirst().get());
+                	for (PrintWriter writer : writers) {
+                        writer.println("MESSAGE " + names.stream().findFirst().get() + " is now the coordinator");
+                    }
+                	System.out.println(names.stream().findFirst().get() + " is now the coordinator");
+                }
                 writers.add(out);
 
                 // Accept messages from this client and broadcast them.
                 while (true) {
                     String input = in.nextLine();
+                    // Executable commands, mainly for debugging purposes
                     if (input.toLowerCase().startsWith("/quit")) {
                         return;
                     }
+                    // Normal messages
                     for (PrintWriter writer : writers) {
                         writer.println("MESSAGE " + name + ": " + input);
+                    }
+                    // List the current users
+                    if (input.toLowerCase().startsWith("/userlist")) {
+                    	for (PrintWriter writer : writers) {
+                            writer.println("MESSAGE " + "System: " + names);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -119,20 +129,20 @@ public class ChatServer {
                 }
                 if (name != null) {
                     System.out.println(name + " is leaving");
-                    names.remove(name);
                     for (PrintWriter writer : writers) {
                         writer.println("MESSAGE " + name + " has left");
                     }
+                    //names.remove(name);
+                    if (coordinators.contains(name)) {
+                    	coordinators.remove(name);
+                    }
                 }
-                if (coordinator != null) {
+                if (coordinators.isEmpty() && !names.isEmpty()) {
+                	coordinators.add(names.stream().findFirst().get());
                 	for (PrintWriter writer : writers) {
-                        writer.println("MESSAGE " + "Coordinator " + name + " has left");
+                        writer.println("MESSAGE " + names.stream().findFirst().get() + " is now the coordinator");
                     }
-                	coordinator = names.iterator().next();
-                    System.out.println(name + " is now the coordinator");
-                    for (PrintWriter writer : writers) {
-                        writer.println("MESSAGE " + "Coordinator " + " is now the coordinator");
-                    }
+                	System.out.println(names.stream().findFirst().get() + " is now the coordinator");
                 }
                 try { socket.close(); } catch (IOException e) {}
             }
