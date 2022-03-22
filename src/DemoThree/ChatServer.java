@@ -1,10 +1,11 @@
 package DemoThree;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
+import java.io.*;
+import java.net.*;
 import java.net.Socket;
-import java.util.Set;
+import java.net.InetAddress;
+import java.util.*;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.concurrent.*;
@@ -120,6 +121,25 @@ public class ChatServer {
                             writer.println("MESSAGE " + "System: " + names);
                         }
                     }
+                    // List coordinators
+                    if (input.toLowerCase().startsWith("/crdntrlist")) {
+                    	for (PrintWriter writer : writers) {
+                            writer.println("MESSAGE " + "System: " + coordinators);
+                        }
+                    }
+                    // Print the Server's IP address
+                    if (input.toLowerCase().startsWith("/serverip")) {
+                    	for (PrintWriter writer : writers) {
+                            writer.println("MESSAGE " + "System: " + InetAddress.getLocalHost().getHostAddress());
+                        }
+                    }
+                    // Print the Client's IP address
+                    if (input.toLowerCase().startsWith("/myip")) {
+                    	for (PrintWriter writer : writers) {
+                    		out.println("GETIP ");
+                    		writer.println("MESSAGE " + "System: " + input);
+                        }
+                    }
                 }
             } catch (Exception e) {
                 System.out.println(e);
@@ -132,10 +152,8 @@ public class ChatServer {
                     for (PrintWriter writer : writers) {
                         writer.println("MESSAGE " + name + " has left");
                     }
-                    //names.remove(name);
-                    if (coordinators.contains(name)) {
-                    	coordinators.remove(name);
-                    }
+                    names.remove(name);
+                    coordinators.remove(name);
                 }
                 if (coordinators.isEmpty() && !names.isEmpty()) {
                 	coordinators.add(names.stream().findFirst().get());
