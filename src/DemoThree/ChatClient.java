@@ -2,6 +2,7 @@ package DemoThree;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -30,6 +31,7 @@ import javax.swing.JTextField;
 public class ChatClient {
 
     String serverAddress;
+    int serverPort;
     Scanner in;
     PrintWriter out;
     JFrame frame = new JFrame("Chatter");
@@ -43,8 +45,9 @@ public class ChatClient {
      * only becomes editable AFTER the client receives the NAMEACCEPTED message from
      * the server.
      */
-    public ChatClient(String serverAddress) {
+    public ChatClient(String serverAddress, int serverPort, String clientID) {
         this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
 
         textField.setEditable(false);
         messageArea.setEditable(false);
@@ -73,7 +76,7 @@ public class ChatClient {
     private void run() throws IOException {
         try {
         	String clientAddress = InetAddress.getLocalHost().getHostAddress();
-            Socket socket = new Socket(serverAddress, 59001);
+            Socket socket = new Socket(serverAddress, serverPort);
             in = new Scanner(socket.getInputStream());
             out = new PrintWriter(socket.getOutputStream(), true);
 
@@ -86,6 +89,8 @@ public class ChatClient {
                     textField.setEditable(true);
                 } else if (line.startsWith("GETIP")) {
                     out.println(clientAddress);
+                } else if (line.startsWith("GETPORT")) {
+                    out.println(clientAddress);
                 } else if (line.startsWith("MESSAGE")) {
                     messageArea.append(line.substring(8) + "\n");
                 }
@@ -97,11 +102,16 @@ public class ChatClient {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            System.err.println("Pass the server IP as the sole command line argument");
+        if (args.length != 3) {
+            System.err.println("Pass the server IP, Port, and the Client ID respectively as the command line arguments");
             return;
         }
-        ChatClient client = new ChatClient(args[0]);
+        
+        //System.out.println(args[0]);
+        //System.out.println(Integer.parseInt(args[1]));
+        //System.out.println(args[2]);
+        
+        ChatClient client = new ChatClient(args[0],Integer.parseInt(args[1]),args[2]);
         client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         client.frame.setVisible(true);
         client.run();
