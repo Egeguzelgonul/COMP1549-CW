@@ -1,5 +1,7 @@
 package DemoThree;
 
+//The following code was based on the sample provided in the third lab
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -29,6 +31,9 @@ import javax.swing.JTextField;
  * following this string should be displayed in its message area.
  */
 public class ChatClient {
+	
+	// In addition to the IP address in the lab code,
+	// the port is also taken in as a command line argument
 
     String serverAddress;
     int serverPort;
@@ -45,6 +50,13 @@ public class ChatClient {
      * only becomes editable AFTER the client receives the NAMEACCEPTED message from
      * the server.
      */
+    
+    // The client required the IP address, the port and the ID to be able to join the server
+    // 127.0.0.1
+    // 59001
+    // 111111
+    // These are the sample command line arguments, although it is a subject to variation
+    
     public ChatClient(String serverAddress, int serverPort, String clientID) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
@@ -75,6 +87,7 @@ public class ChatClient {
 
     private void run() throws IOException {
         try {
+        	// Using the InetAddress, the client's ip can be stored in a variable
         	String clientAddress = InetAddress.getLocalHost().getHostAddress();
             Socket socket = new Socket(serverAddress, serverPort);
             in = new Scanner(socket.getInputStream());
@@ -87,6 +100,7 @@ public class ChatClient {
                 } else if (line.startsWith("NAMEACCEPTED")) {
                     this.frame.setTitle("Chatter - " + line.substring(13));
                     textField.setEditable(true);
+                // Sends the ip address of this client to the server on demand
                 } else if (line.startsWith("GETIP")) {
                     out.println(clientAddress);
                 } else if (line.startsWith("GETPORT")) {
@@ -102,6 +116,7 @@ public class ChatClient {
     }
 
     public static void main(String[] args) throws Exception {
+    	// If the command line arguments are not three lines, the client does not launch
         if (args.length != 3) {
             System.err.println("Pass the server IP, Port, and the Client ID respectively as the command line arguments");
             return;
@@ -110,6 +125,7 @@ public class ChatClient {
         //System.out.println(args[0]);
         //System.out.println(Integer.parseInt(args[1]));
         //System.out.println(args[2]);
+        // The different ,lines of arguments are meant for different parameters of the client session
         
         ChatClient client = new ChatClient(args[0],Integer.parseInt(args[1]),args[2]);
         client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
